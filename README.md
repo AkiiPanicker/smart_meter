@@ -1,135 +1,210 @@
-# ⚡ VoltGuard  
-### Real-Time Tamper Detection & Secure Smart Meter Intelligence
+⚡ VoltGuard
+Real-Time Tamper Detection & Secure Smart Meter Intelligence
 
-VoltGuard is a hardware-rooted, cryptographically secure, AI-powered smart metering system designed to detect electricity tampering in real time, reduce AT&C losses, and enhance grid reliability through secure telemetry and intelligent anomaly detection.
+VoltGuard is a hardware-rooted, cryptographically secure smart metering platform designed to detect electricity tampering in real time, stabilize electrical measurements using PID control, and securely stream telemetry to an AI-powered monitoring dashboard.
 
----
+The system combines:
+Multi-modal physical and electrical tamper sensing
+Embedded cryptographic telemetry (AES-128 + HMAC-SHA256)
+RTC-based tamper logging with persistent counter
+On-device status display (Green = Normal, Red = Tamper)
+UART-to-JSON telemetry bridge
+Flask-based monitoring dashboard
+Grid-level anomaly classification
+This project represents a full-stack integration of hardware security, embedded control systems, and backend intelligence.
 
-## 👥 Team
 
-- Arnab Ranjan Sikdar
-- Akshat Panicker (and as the primary author of this file I dedicate this to my serii <3 ) 
-- Raagmanas Madhukar 
-- Siddharth Gaur
+👥 Team
 
----
+Arnab Ranjan Sikdar
+Complete hardware architecture, circuit design, PCB integration, firmware logic, cryptographic implementation (AES-128 + HMAC-SHA256), and full hardware–software bridging.
 
-## 📉 Problem Statement
+Akshat Panicker
+Primary author of this repository and core software contributor.
 
+Raagmanas Madhukar
+
+Siddharth Gaur
+
+
+📉 Problem Statement
 Electricity theft and transmission inefficiencies result in massive annual revenue losses and grid instability. Traditional metering systems lack:
-
-- Secure device identity
-- End-to-end encrypted telemetry
-- Real-time anomaly detection
-- Tamper-proof firmware validation
-- Predictive grid stabilization
-
+Secure device identity
+End-to-end encrypted telemetry
+Real-time anomaly detection
+Tamper-proof firmware validation
+Predictive grid stabilization
 VoltGuard addresses these weaknesses using a multi-layered secure architecture combining hardware security, control theory, and AI-driven intelligence.
 
----
 
-## 🏗 System Architecture
-
+🏗 System Architecture
 VoltGuard follows a layered secure design:
 
-### 1️⃣ Meter Node (Hardware Layer)
-- Multi-modal tamper sensing
-- Voltage & current monitoring
-- Secure boot chain
-- AES-128 encrypted telemetry
-- HMAC-SHA256 integrity signing
-- Hardware-rooted cryptographic identity
+1️⃣ Meter Node (Hardware Layer)
+Multi-modal tamper sensing
+Voltage & current monitoring
+Secure boot chain
+AES-128 encrypted telemetry
+HMAC-SHA256 integrity signing
+Hardware-rooted cryptographic identity
+States
+  * NORMAL – Operating within threshold
+  * TAMPERING – Anomaly detected and logged with timestamp
 
-States:
-- **NORMAL** – Operating within threshold
-- **TAMPERING** – Anomaly detected and logged with timestamp
+2️⃣ Edge / Gateway Layer
+Digital signature verification
+Rejects unauthenticated data
+Secure transport enforcement
+Real-time telemetry forwarding
 
----
+3️⃣ Backend Intelligence Layer
+Real-time telemetry monitoring
+AI-driven tamper classification
+Confidence & severity scoring
+Historical event logging
+Operational visibility dashboard
 
-### 2️⃣ Edge / Gateway Layer
-- Digital signature verification
-- Rejects unauthenticated data
-- Secure transport enforcement
-- Real-time telemetry forwarding
-
----
-
-### 3️⃣ Backend Intelligence Layer
-- Real-time telemetry monitoring
-- AI-driven tamper classification
-- Confidence & severity scoring
-- Historical event logging
-- Operational visibility dashboard
-
----
-
-## 🧠 AI Model
-
+🧠 AI Model
 The AI subsystem performs:
+Load anomaly detection
+Tamper classification
+Pattern recognition in voltage/current deviations
+Confidence-based alert scoring
+Predictive instability detection
 
-- Load anomaly detection
-- Tamper classification
-- Pattern recognition in voltage/current deviations
-- Confidence-based alert scoring
-- Predictive instability detection
+Future Scope
+Adaptive model retraining
+Cloud-integrated intelligence
+PID-AI hybrid auto-tuning
 
-Future scope:
-- Adaptive model retraining
-- Cloud-integrated intelligence
-- PID-AI hybrid auto-tuning
-
----
-
-## ⚙ PID-Based Physical Stabilization
-
-VoltGuard integrates control theory for grid stability:
-
-\[
-u(t) = K_p e(t) + K_i \int e(t)dt + K_d \frac{de(t)}{dt}
-\]
-
-Where:
-- \( e(t) \) = voltage deviation
-- \( K_p, K_i, K_d \) = tuned control gains
+⚙ PID-Based Physical Stabilization
+  VoltGuard integrates control theory for grid stability:
+     u(t) = Kp * e(t) + Ki * ∫ e(t) dt + Kd * (de(t)/dt)
+     Where:
+     - e(t) = voltage deviation
+     - Kp = proportional gain
+     - Ki = integral gain
+     - Kd = derivative gain
 
 This enables:
-- Voltage stabilization
-- Predictive corrective action
-- Hybrid AI-assisted regulation (future roadmap)
+Voltage stabilization
+Predictive corrective action
+Hybrid AI-assisted regulation (future roadmap)
 
----
+🌐 Flask Dashboard
+Built using Flask, the dashboard provides:
+Real-time meter telemetry
+Statistical anomaly visualization
+Tamper alerts
+Historical logs
+Fleet-scale monitoring
+Grid-level observability
 
-## 🌐 Flask Dashboard
-
-Built using **Flask**, the dashboard provides:
-
-- Real-time meter telemetry
-- Statistical anomaly visualization
-- Tamper alerts
-- Historical logs
-- Fleet-scale monitoring
-- Grid-level observability
-
----
-
-## 🔐 Security Model
-
+🔐 Security Model
 VoltGuard enforces:
-
-- Hardware-rooted identity
-- Secure boot attestation
-- Firmware authenticity verification
-- AES transport encryption
-- HMAC integrity verification
-- Mutual authentication
-
+Hardware-rooted identity
+Secure boot attestation
+Firmware authenticity verification
+AES transport encryption
+HMAC integrity verification
+Mutual authentication
 Unauthenticated devices are automatically rejected.
 
----
 
-## 📦 Project Structure
+⚙ Hardware Setup (TI Code Composer Studio)
+Firmware is pre-configured. No code editing required.
 
-```bash
+🔌 Step 1 – Open Firmware in CCS
+
+Launch TI Code Composer Studio (CCS).
+
+Go to:
+File → Open Folder
+
+Select:
+VoltGuard/firmware/
+
+Ensure the project appears in Project Explorer.
+
+
+⚡ Step 2 – Flash the MCU
+
+Expand the project.
+
+Right-click: main_project
+
+Select: Flash
+
+The firmware will be programmed onto the microcontroller.
+
+Ensure the device exits debug mode and runs normally after flashing.
+
+🖥 UART Verification
+
+Connect the device via USB.
+
+Open Device Manager.
+
+Locate the COM port labeled:
+Texas Instruments (Usually COM6, but may vary.)
+
+Open a serial console (inside CCS or external).
+
+Configure:
+
+Baud Rate: 115200
+
+Keep other settings default
+
+You should see real-time telemetry output.
+
+
+🖥 Software Setup (Python Backend)
+Requirements: Python 3.12
+
+📦 Install Dependencies
+From the project root:
+pip install -r requirements.txt
+
+
+▶️ Correct Startup Order
+⚠ Always start UART bridge before launching Flask.
+
+1️⃣ Start UART Bridge
+python smart_meter_platform/uart_to_logsJSON.py
+
+Inside that file, verify:
+SERIAL_PORT = "COM6"   # Change if needed
+BAUD_RATE = 115200
+
+Adjust the COM port if different on your system.
+
+2️⃣ Start Flask Dashboard
+python smart_meter_platform/run.py
+
+Open browser:
+http://127.0.0.1:5000
+
+
+🔁 Complete Internal Workflow
+
+Open CCS
+↓
+Open firmware folder
+↓
+Right-click main_project → Flash
+↓
+Verify UART @ 115200
+↓
+Run uart_to_logsJSON.py
+↓
+Run run.py
+↓
+Open Dashboard
+
+
+
+📦 Project Structure
 VoltGuard/
 │
 ├── smart_meter_platform/
@@ -147,76 +222,28 @@ VoltGuard/
 ├── firmware/
 ├── hardware/
 └── README.md
-```
 
----
 
-## 🚀 Running the Dashboard
-
-### 1️⃣ Clone the repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/VoltGuard.git
-cd VoltGuard
-```
-
-### 2️⃣ Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3️⃣ Run the server
-
-```bash
-python run.py
-```
-
-Open in browser:
-
-```
-http://127.0.0.1:5000
-```
-
----
-
-## 📊 Impact
-
+📊 Impact
 VoltGuard enables:
+Reduction in tampering events
+Improved revenue realization
+Reduced grid instability
+Transparent audit trails
+Scalable deployment architecture
 
-- Reduction in tampering events
-- Improved revenue realization
-- Reduced grid instability
-- Transparent audit trails
-- Scalable deployment architecture
+🛣 Deployment Vision
+Pilot deployments with live tamper dashboard validation
+Scalable expansion model
+Transition from hardware-centric to grid intelligence platform
+PID-AI hybrid adaptive grid control
 
----
+🔮 Future Scope
+Cloud-based telemetry pipeline
+Remote firmware updates
+Smart Grid 2.0 interoperability
+EV & solar load balancing
+Nationwide smart meter integration
 
-## 🛣 Deployment Vision
-
-- Pilot deployments with live tamper dashboard validation
-- Scalable expansion model
-- Transition from hardware-centric to grid intelligence platform
-- PID-AI hybrid adaptive grid control
-
----
-
-## 🔮 Future Scope
-
-- Cloud-based telemetry pipeline
-- Remote firmware updates
-- Smart Grid 2.0 interoperability
-- EV & solar load balancing
-- Nationwide smart meter integration
-
----
-
-
-## 📜 License
-
-Specify your license here (MIT / Proprietary / etc.)
-
----
-
-## ⚡ VoltGuard  
-Secure. Intelligent. Tamper-Resistant.
+⚡ VoltGuard
+Hardware-first. Security-driven. Grid-aware.
