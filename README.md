@@ -1,18 +1,22 @@
-# ⚡ VoltGuard  
-### Real-Time Tamper Detection & Secure Smart Meter Intelligence
+# ⚡ VoltGuard
 
-VoltGuard is a hardware-rooted, cryptographically secure, AI-powered smart metering system designed to detect electricity tampering in real time, reduce AT&C losses, and enhance grid reliability through secure telemetry and intelligent anomaly detection.
+**Real-Time Tamper Detection & Secure Smart Meter Intelligence**
 
+VoltGuard is a hardware-rooted, cryptographically secure smart metering platform designed to detect electricity tampering in real time, stabilize electrical measurements using PID control, and securely stream telemetry to an AI-powered monitoring dashboard.
 
-## 👥 Team
+The system combines:
 
-- Arnab Ranjan Sikdar 
-- Akshat Panicker (And as the author writing this I dedicate it to Serii <3 )
-- Raagmanas Madhukar 
-- Siddharth Gaur
+- Multi-modal physical and electrical tamper sensing
+- Embedded cryptographic telemetry (AES-128 + HMAC-SHA256)
+- RTC-based tamper logging with persistent counter
+- On-device status display (Green = Normal, Red = Tamper)
+- UART-to-JSON telemetry bridge
+- Flask-based monitoring dashboard
+- Grid-level anomaly classification
+
+This project represents a full-stack integration of hardware security, embedded control systems, and backend intelligence.
 
 ---
-
 
 ## 📉 Problem Statement
 
@@ -33,6 +37,7 @@ VoltGuard addresses these weaknesses using a multi-layered secure architecture c
 VoltGuard follows a layered secure design:
 
 ### 1️⃣ Meter Node (Hardware Layer)
+
 - Multi-modal tamper sensing
 - Voltage & current monitoring
 - Secure boot chain
@@ -40,21 +45,22 @@ VoltGuard follows a layered secure design:
 - HMAC-SHA256 integrity signing
 - Hardware-rooted cryptographic identity
 
-States:
-- **NORMAL** – Operating within threshold
-- **TAMPERING** – Anomaly detected and logged with timestamp
+**States:**
 
----
+| State | Description |
+|-------|-------------|
+| `NORMAL` | Operating within threshold |
+| `TAMPERING` | Anomaly detected and logged with timestamp |
 
 ### 2️⃣ Edge / Gateway Layer
+
 - Digital signature verification
 - Rejects unauthenticated data
 - Secure transport enforcement
 - Real-time telemetry forwarding
 
----
-
 ### 3️⃣ Backend Intelligence Layer
+
 - Real-time telemetry monitoring
 - AI-driven tamper classification
 - Confidence & severity scoring
@@ -73,7 +79,7 @@ The AI subsystem performs:
 - Confidence-based alert scoring
 - Predictive instability detection
 
-Future scope:
+**Future Scope:**
 - Adaptive model retraining
 - Cloud-integrated intelligence
 - PID-AI hybrid auto-tuning
@@ -84,15 +90,18 @@ Future scope:
 
 VoltGuard integrates control theory for grid stability:
 
-\[
-u(t) = K_p e(t) + K_i \int e(t)dt + K_d \frac{de(t)}{dt}
-\]
+```
+u(t) = Kp * e(t) + Ki * ∫ e(t) dt + Kd * (de(t)/dt)
 
 Where:
-- \( e(t) \) = voltage deviation
-- \( K_p, K_i, K_d \) = tuned control gains
+  e(t) = voltage deviation
+  Kp   = proportional gain
+  Ki   = integral gain
+  Kd   = derivative gain
+```
 
 This enables:
+
 - Voltage stabilization
 - Predictive corrective action
 - Hybrid AI-assisted regulation (future roadmap)
@@ -101,7 +110,7 @@ This enables:
 
 ## 🌐 Flask Dashboard
 
-Built using **Flask**, the dashboard provides:
+Built using Flask, the dashboard provides:
 
 - Real-time meter telemetry
 - Statistical anomaly visualization
@@ -123,13 +132,109 @@ VoltGuard enforces:
 - HMAC integrity verification
 - Mutual authentication
 
-Unauthenticated devices are automatically rejected.
+> Unauthenticated devices are automatically rejected.
+
+---
+
+## ⚙ Hardware Setup (TI Code Composer Studio)
+
+Firmware is pre-configured. No code editing required.
+
+### 🔌 Step 1 — Open Firmware in CCS
+
+1. Launch TI Code Composer Studio (CCS)
+2. Go to: **File → Open Folder**
+3. Select: `VoltGuard/firmware/`
+4. Ensure the project appears in Project Explorer
+
+### ⚡ Step 2 — Flash the MCU
+
+1. Expand the project
+2. Right-click: `main_project`
+3. Select: **Flash**
+4. The firmware will be programmed onto the microcontroller
+5. Ensure the device exits debug mode and runs normally after flashing
+
+### 🖥 UART Verification
+
+1. Connect the device via USB
+2. Open Device Manager and locate the COM port labeled **Texas Instruments** — note the port number (e.g. `COM6`)
+3. Open a serial console (inside CCS or external) and configure it with the COM port you located above:
+
+```
+Port:      COM6  (use the Texas Instruments port from Device Manager)
+Baud Rate: 115200
+(Keep other settings default)
+```
+
+You should see real-time telemetry output.
+
+---
+
+## 🖥 Software Setup (Python Backend)
+
+**Requirements:** Python 3.12
+
+### 📦 Install Dependencies
+
+From the project root:
+
+```bash
+pip install -r requirements.txt
+```
+
+### ▶️ Correct Startup Order
+
+> ⚠️ Always start the UART bridge **before** launching Flask.
+
+**1️⃣ Start UART Bridge**
+
+```bash
+python smart_meter_platform/uart_to_logsJSON.py
+```
+
+Inside that file, verify:
+
+```python
+SERIAL_PORT = "COM6"   # Change if needed
+BAUD_RATE = 115200
+```
+
+Adjust the COM port if different on your system.
+
+**2️⃣ Start Flask Dashboard**
+
+```bash
+python smart_meter_platform/run.py
+```
+
+Open browser: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+---
+
+## 🔁 Complete Internal Workflow
+
+```
+Open CCS
+    ↓
+Open firmware folder
+    ↓
+Right-click main_project → Flash
+    ↓
+Verify UART @ 115200
+    ↓
+Run uart_to_logsJSON.py
+    ↓
+Run run.py
+    ↓
+Open Dashboard
+```
 
 ---
 
 ## 📦 Project Structure
 
-```bash
+```
 VoltGuard/
 │
 ├── smart_meter_platform/
@@ -147,35 +252,6 @@ VoltGuard/
 ├── firmware/
 ├── hardware/
 └── README.md
-```
-
----
-
-## 🚀 Running the Dashboard
-
-### 1️⃣ Clone the repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/VoltGuard.git
-cd VoltGuard
-```
-
-### 2️⃣ Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3️⃣ Run the server
-
-```bash
-python run.py
-```
-
-Open in browser:
-
-```
-http://127.0.0.1:5000
 ```
 
 ---
@@ -211,11 +287,4 @@ VoltGuard enables:
 
 ---
 
-## 📜 License
-
-Specify your license here (MIT / Proprietary / etc.)
-
----
-
-## ⚡ VoltGuard  
-Secure. Intelligent. Tamper-Resistant.
+*⚡ VoltGuard — Hardware-first. Security-driven. Grid-aware.*
