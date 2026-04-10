@@ -98,3 +98,4 @@ class SystemSimulation:
 
 # Singleton instance
 simulation = SystemSimulation()
+
