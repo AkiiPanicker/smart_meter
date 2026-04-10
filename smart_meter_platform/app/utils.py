@@ -13,7 +13,10 @@ def generate_hex_string(length: int) -> str:
 def generate_mock_reading(node_id: str, force_tamper: bool = False) -> MeterReading:
     """Generates a single mock meter reading."""
     is_tamper = force_tamper or random.random() < 0.15
-    tamper_reasons: list[TamperReason] = ['Abnormal Voltage', 'Overcurrent', 'Light Tamper', 'Switch Tampering']
+    tamper_reasons: list[TamperReason] = [
+        'Abnormal Voltage', 'Overcurrent', 'Light Tamper', 
+        'Switch Tampering', 'Magnetic Interference', 'Physical Access'
+    ]
     
     return MeterReading(
         node_id=node_id,
@@ -31,14 +34,11 @@ def generate_mock_reading(node_id: str, force_tamper: bool = False) -> MeterRead
 
 def load_sensor_logs(filepath: str) -> List[Dict]:
     """Load sensor data from JSON file."""
-    # Use the passed filepath argument, DO NOT default to a C:\Users path
     try:
-        print(f"DEBUG: Attempting to load JSON from: {filepath}")
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 data = json.load(f)
                 result = data if isinstance(data, list) else []
-                print(f"DEBUG: Loaded {len(result)} items.")
                 return result
         else:
             print(f"Warning: {filepath} not found. Returning empty list.")
@@ -50,41 +50,98 @@ def load_sensor_logs(filepath: str) -> List[Dict]:
         print(f"Error loading sensor logs: {e}")
         return []
 
+def classify_tamper_reason(voltage: float, current: float, light: float) -> Optional[TamperReason]:
+    """
+    ENHANCED: Intelligent tamper reason classification based on sensor values
+    """
+    # Priority-based classification (check most specific first)
+    
+    # 1. Physical Access (Light spike - highest priority)
+    if light > 500:
+        return 'Physical Access'
+    
+    # 2. Magnetic Interference (low current + normal voltage)
+    if current < 3 and 210 <= voltage <= 230:
+        return 'Magnetic Interference'
+    
+    # 3. Voltage Abnormality
+    if voltage > 250 or voltage < 200:
+        return 'Abnormal Voltage'
+    
+    # 4. Overcurrent / Bypass
+    if current > 15:
+        return 'Overcurrent'
+    
+    # 5. Light Tamper (moderate light anomaly)
+    if light < 500:
+        return 'Light Tamper'
+    
+    # 6. Default for any other anomaly
+    return 'Switch Tampering'
+
 def convert_json_to_meter_reading(json_data: Dict) -> MeterReading:
-    """Convert JSON data format to MeterReading object."""
+    """
+    ENHANCED: Convert JSON data format to MeterReading with intelligent classification
+    """
+    voltage = float(json_data.get('voltage', 220))
+    current = float(json_data.get('current', 5))
+    light = float(json_data.get('lightIntensity', 900))
+    
+    # Determine event type
     event_type = 'TAMPER' if json_data.get('tamperFlag', 0) == 1 else 'NORMAL'
     
+    # Classify tamper reason if anomaly detected
     tamper_reason = None
     if event_type == 'TAMPER':
-        voltage = json_data.get('voltage', 0)
-        current = json_data.get('current', 0)
-        light = json_data.get('lightIntensity', 0)
-        
-        if voltage > 240 or voltage < 200:
-            tamper_reason = 'Abnormal Voltage'
-        elif current > 15:
-            tamper_reason = 'Overcurrent'
-        elif light < 500:
-            tamper_reason = 'Light Tamper'
-        else:
-            tamper_reason = 'Switch Tampering'
+        tamper_reason = classify_tamper_reason(voltage, current, light)
     
-    # Check key mappings carefully
-    confidence = random.uniform(75, 95) if event_type == 'TAMPER' else random.uniform(50, 80)
+    # Calculate realistic confidence based on sensor deviation
+    if event_type == 'TAMPER':
+        # Higher confidence for more extreme deviations
+        voltage_dev = abs(voltage - 220) / 220
+        current_dev = abs(current - 5) / 5 if current > 5 else 0
+        light_dev = abs(light - 900) / 900 if light < 900 else 0
+        
+        max_dev = max(voltage_dev, current_dev, light_dev)
+        confidence = min(95, 60 + max_dev * 100)
+    else:
+        confidence = random.uniform(85, 95)
     
     return MeterReading(
         node_id=json_data.get('node_id', 'UNKNOWN'),
         timestamp=json_data.get('timestamp', datetime.utcnow().isoformat() + "Z"),
-        voltage=float(json_data.get('voltage', 220)),
-        current=float(json_data.get('current', 5)),
-        # Mapping 'lightIntensity' from JSON to 'light' in dataclass
-        light=float(json_data.get('lightIntensity', 900)),
+        voltage=voltage,
+        current=current,
+        light=light,
         event_type=event_type,
         tamper_reason=tamper_reason,
-        confidence=confidence,
+        confidence=round(confidence, 1),
         ciphertext=generate_hex_string(32),
         hmac=generate_hex_string(64),
         verified=True,
-        # Default health score, overwritten in __init__.py logic usually
-        health_score=100
+        health_score=100  # Will be updated by AI model
     )
+
+def calculate_alert_severity(confidence: float, alert_type: str) -> str:
+    """
+    Calculate severity level based on confidence and alert type
+    """
+    critical_types = [
+        'CRITICAL_TAMPER_EVENT',
+        'MULTI_SENSOR_PHYSICAL_TAMPER',
+        'METER_COVER_OPEN',
+        'MAGNETIC_BYPASS_ATTEMPT'
+    ]
+    
+    high_types = [
+        'CURRENT_BYPASS_OR_LINE_HOOK',
+        'VOLTAGE_MANIPULATION',
+        'THERMAL_TAMPER_OR_OVERHEAT'
+    ]
+    
+    if alert_type in critical_types or confidence > 90:
+        return 'high'
+    elif alert_type in high_types or confidence > 75:
+        return 'medium'
+    else:
+        return 'low'
